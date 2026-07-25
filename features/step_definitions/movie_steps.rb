@@ -4,8 +4,9 @@ Given(/the following movies exist/) do |movies_table|
   movies_table.hashes.each do |movie|
     # each returned element will be a hash whose key is the table header.
     # you should arrange to add that movie to the database here.
+    Movie.create!(movie)
   end
-  pending "Fill in this step in movie_steps.rb"
+  "Fill in this step in movie_steps.rb"
 end
 
 Then(/(.*) seed movies should exist/) do |n_seeds|
@@ -18,28 +19,26 @@ end
 Then(/^I should see "(.*)" before "(.*)" in the movie list$/) do |e1, e2|
   #  ensure that that e1 occurs before e2.
   #  page.body is the entire content of the page as a string.
-  pending "Fill in this step in movie_steps.rb"
-end
-
-
-# Make it easier to express checking or unchecking several boxes at once
-#  "When I check only the following ratings: PG, G, R"
-
-When(/I check the following ratings: (.*)/) do |rating_list|
-  # HINT: use String#split to split up the rating_list, then
-  #   iterate over the ratings and reuse the "When I check..." or
-  #   "When I uncheck..." steps in lines 89-95 of web_steps.rb
-  pending "Fill in this step in movie_steps.rb"
+  expect(page.body).to match(/#{e1}.*?#{e2}/m)
 end
 
 Then(/^I should (not )?see the following movies: (.*)$/) do |no, movie_list|
   # Take a look at web_steps.rb Then /^(?:|I )should see "([^"]*)"$/
-  pending "Fill in this step in movie_steps.rb"
+  movies = movie_list.split(',').map(&:strip)
+  movies.each do |movie|
+    if no
+      expect(page).not_to have_content(movie)
+    else
+      expect(page).to have_content(movie)
+    end
+  end
 end
 
 Then(/^I should see all the movies$/) do
   # Make sure that all the movies in the app are visible in the table
-  pending "Fill in this step in movie_steps.rb"
+  Movie.all.each do |movie|
+    expect(page).to have_content(movie.title)
+  end
 end
 
 ### Utility Steps Just for this assignment.
@@ -62,4 +61,21 @@ Then(/complete the rest of of this scenario/) do
   # You should leave this block inside movie_steps, but replace
   # the line in your scenarios with the appropriate steps.
   raise "Remove this step from your .feature files"
+end
+
+When /I (un)?check the following ratings: (.*)/ do |uncheck, rating_list|
+  # Split the rating_list by comma and remove surrounding whitespace
+  ratings = rating_list.split(',').map(&:strip)
+  
+  ratings.each do |rating|
+    # The checkboxes in the RottenPotatoes view are named like "ratings_PG", "ratings_R", etc.
+    checkbox_name = "ratings_#{rating}"
+    
+    if uncheck
+      uncheck(checkbox_name)
+    else
+      check(checkbox_name)
+    end
+  end
+
 end
